@@ -1,12 +1,11 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
 	"io/ioutil"
-	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	
 )
 
 func check(e error) {
@@ -15,10 +14,10 @@ func check(e error) {
 	}
 }
 
-func createBoard(difficulty string) [9][9]int {
+func createBoard() [9][9]int {
 	newBoard := [9][9]int{}
-	difficulty = strings.TrimSuffix(difficulty, "\n")
-	file, err := ioutil.ReadFile("puzzles/" + difficulty + ".txt")
+
+	file, err := ioutil.ReadFile(filepath.FromSlash("puzzles/easy.txt"))
 	check(err)
 
 	boardData := strings.Split(string(file), "\n")
@@ -38,13 +37,8 @@ func createBoard(difficulty string) [9][9]int {
 }
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Enter difficulty to play:")
-	var difficulty string
-	difficulty, err := reader.ReadString('\n')
 
-	check(err)
-
-	createBoard(difficulty)
+	
+	display(createBoard())
 
 }
