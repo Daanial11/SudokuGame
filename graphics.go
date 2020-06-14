@@ -31,6 +31,7 @@ var (
 	cursorDot *ebiten.Image
 	arcadeFont font.Face
 	board [9][9]int
+	baseBoardValues [9][9]int
 	validBoardValues [9][9]int
 	changeFlag SafeBool
 
@@ -53,11 +54,13 @@ func update(screen *ebiten.Image) error {
 	boardMutex.Lock()
 	for y := 0; y<9; y++ {
 		for x := 0; x<9; x++ {
-			if board[y][x] != 0 && validBoardValues[y][x] != 1 {
+			if board[y][x] != 0 && validBoardValues[y][x] != 1 && baseBoardValues[y][x] == 0 {
 				text.Draw(screen, strconv.Itoa(board[y][x]), arcadeFont, firstCellX + (cellDiff*x), firstCellY + (cellDiff*y), color.Black)
 
-			} else if board[y][x] != 0 {
+			} else if board[y][x] != 0 && validBoardValues[y][x] != 0 {
 				text.Draw(screen, strconv.Itoa(board[y][x]), arcadeFont, firstCellX + (cellDiff*x), firstCellY + (cellDiff*y), color.RGBA{255, 17, 0, 255})
+			} else if baseBoardValues[y][x] != 0 && validBoardValues[y][x] != 1{
+				text.Draw(screen, strconv.Itoa(baseBoardValues[y][x]), arcadeFont, firstCellX + (cellDiff*x), firstCellY + (cellDiff*y), color.RGBA{105, 111, 120, 255})
 			}
 		}
 	}
@@ -74,8 +77,8 @@ func update(screen *ebiten.Image) error {
 		screen.DrawImage(cursorDot, op)
 	}
 	
-	for k := 1; k<10; k++{
-		if ebiten.IsKeyPressed(ebiten.Key(k)) && !changeFlag.Get() && board[y/48][x/48] !=k {
+	for k := 0; k<10; k++{
+		if ebiten.IsKeyPressed(ebiten.Key(k)) && !changeFlag.Get() && board[y/48][x/48] != k && baseBoardValues[y/48][x/48] == 0 {
 			boardMutex.Lock()
 			board[y/48][x/48] = k
 			boardMutex.Unlock()
@@ -92,6 +95,7 @@ func update(screen *ebiten.Image) error {
 func display(intialBoard [9][9]int, boardChan chan [9][9]int) {
 	fmt.Println("1")
 	board = intialBoard
+	baseBoardValues = intialBoard
 	go boardSender(boardChan)
 	err := ebiten.Run(update, screenHeight, screenHeight, 2, "Suduko")
 	check(err)
